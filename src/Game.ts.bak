@@ -1,0 +1,61 @@
+import { Player } from "./Entities/Player";
+import { Enemy } from "./Entities/Enemy";
+import { Input } from "./Systems/Input";
+import { MapBuilder } from "./World/MapBuilder";
+import { Map } from "./World/Map";
+import { Camera } from "./Systems/Camera";
+//import { level1 } from "./World/level1";
+
+export class Game {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private player: Player;
+  private enemies: Enemy[];
+  private input: Input;
+  private lastTime: number;
+  private map: Map;
+  private camera: Camera;
+
+  constructor() {
+    this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+    this.lastTime = 0;
+    const level1 = new MapBuilder().generateBaseLayout();
+    this.map = new Map(level1);
+    this.input = new Input();
+    this.player = new Player(this.input, this.map);
+    this.enemies = Enemy.generateEnemies(100, this.map);
+    this.camera = new Camera();
+  }
+
+  loop(time: number) {
+    const delta = (time - this.lastTime) / 1000;
+    this.lastTime = time;
+    this.update(delta);
+    this.draw();
+    requestAnimationFrame(this.loop.bind(this));
+  }
+
+  update(delta: number) {
+    this.player.update(delta);
+    this.camera.update(this.player.x, this.player.y);
+    for (const enemy of this.enemies) {
+      enemy.updateEnemy(delta, this.player);
+    }
+  }
+
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.camera.apply(this.ctx);
+    this.map.draw(this.ctx);
+    this.player.draw(this.ctx);
+    for (const enemy of this.enemies) {
+      enemy.draw(this.ctx);
+    }
+    this.camera.release(this.ctx);
+  }
+
+  start() {
+    requestAnimationFrame(this.loop.bind(this));
+  }
+}

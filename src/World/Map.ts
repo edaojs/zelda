@@ -1,0 +1,115 @@
+import { Global } from "../Global";
+//import { convertTo2DArray } from "../utils/arrayToCols";
+
+export class Map {
+  private tileSize = Global.TILE_SIZE;
+  public wallGrid: number[][];
+  public widthInTiles = Global.CANVAS_WIDTH / Global.TILE_SIZE
+  public heightInTiles = Global.CANVAS_HEIGHT / Global.TILE_SIZE
+  //  public tilesetImage: HTMLImageElement;
+
+  constructor(levelMap: any) {
+    this.wallGrid = levelMap;
+    //this.wallGrid = convertTo2DArray(levelMap.layers[0].data, (Global.CANVAS_WIDTH / Global.TILE_SIZE));
+    //console.log("MAP", this.wallGrid)
+    // this.tilesetImage = new Image();
+    // this.tilesetImage.src = `assets/world/tileset4.png`;
+    //this.tilesetImage.src = `assets/world/${levelMap.tilesets[0].image}`;
+  }
+
+  public isWall(col: number, row: number): boolean {
+    const tileID = this.wallGrid[row]?.[col];
+    return tileID === 1;
+  }
+
+  public isFloor(col: number, row: number): boolean {
+    const tileID = this.wallGrid[row]?.[col];
+    return tileID === 0;
+  }  
+
+  public draw(ctx: CanvasRenderingContext2D) {
+    for (let row = 0; row < this.wallGrid.length; row++) {
+      for (let col = 0; col < this.wallGrid[row].length; col++) {
+        if (this.wallGrid[row][col] === 1) {
+
+          ctx.fillStyle = 'white';
+          ctx.fillRect(
+            col * this.tileSize,
+            row * this.tileSize,
+            this.tileSize,
+            this.tileSize,
+          );
+
+          // Erase a rectangle in the middle
+          ctx.clearRect(
+            col * this.tileSize + 2,
+            row * this.tileSize + 2,
+            this.tileSize - 4,
+            this.tileSize - 4,
+          );          
+        }
+      }
+    }
+  }
+
+  // public draw(ctx: CanvasRenderingContext2D) {
+  //   for (let row = 0; row < this.wallGrid.length; row++) {
+  //     for (let col = 0; col < this.wallGrid[row].length; col++) {
+  //       const tileId = this.wallGrid[row][col];
+  //       const tilesetX = (tileId % 4) * Global.TILE_SIZE;
+  //       const tilesetY = Math.floor(tileId / 4) * Global.TILE_SIZE;
+
+  //       ctx.drawImage(
+  //         this.tilesetImage,
+  //         tilesetX,
+  //         tilesetY,
+  //         this.tileSize,
+  //         this.tileSize, // Origem no PNG
+  //         col * this.tileSize,
+  //         row * this.tileSize,
+  //         this.tileSize,
+  //         this.tileSize, // Destino no Canvas
+  //       );
+  //     }
+  //   }
+  // }
+
+  // public draw(ctx: CanvasRenderingContext2D) {
+  //   // 1. Configurações do Tileset (ajuste esses números conforme sua imagem)
+  //   const tilesetColumns = 8; // quantos tiles existem na horizontal do seu PNG
+
+  //   // 2. Percorre a matriz 2D (this.wallGrid)
+  //   for (let row = 0; row < this.wallGrid.length; row++) {
+  //     for (let col = 0; col < this.wallGrid[row].length; col++) {
+  //       const tileID = this.wallGrid[row][col];
+
+  //       // Se o ID for 0 (vazio) ou 54 (chão opcional), você pode pular ou desenhar
+  //       if (tileID === 0) continue;
+
+  //       // 3. Onde recortar no Tileset (Origem)
+  //       // Tiled soma 1 ao ID, então subtraímos para voltar ao índice 0
+
+  //       const actualID = tileID - 1;
+  //       const sx = (actualID % tilesetColumns) * this.tileSize;
+  //       const sy = Math.floor(actualID / tilesetColumns) * this.tileSize;
+
+  //       // 4. Onde desenhar no Canvas (Destino)
+  //       const dx = col * this.tileSize;
+  //       const dy = row * this.tileSize;
+
+  //       // 5. Desenha o pedacinho da imagem
+  //       ctx.drawImage(
+  //         this.tilesetImage, // Sua variável HTMLImageElement
+  //         sx,
+  //         sy, // Coordenadas de origem (PNG)
+  //         this.tileSize,
+  //         this.tileSize, // Tamanho do corte
+  //         dx,
+  //         dy, // Coordenadas de destino (Jogo)
+  //         this.tileSize,
+  //         this.tileSize, // Tamanho na tela
+  //       );
+  //     }
+  //   }
+  // }
+}
