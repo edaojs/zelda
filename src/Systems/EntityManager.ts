@@ -12,10 +12,10 @@ export class EntityManager {
   private score: number;
   private requestNextLevel: boolean;
 
-  constructor(player: Player, enemies: Enemy[]) {
+  constructor(player: Player, enemies: Enemy[], score: number = 0) {
     this.player = player;
     this.enemies = enemies;
-    this.score = 0;
+    this.score = score;
     this.items = [];
     this.requestNextLevel = false;
     this.generateItems(player.getMap());
@@ -91,42 +91,34 @@ export class EntityManager {
       this.player.move(diffCol, diffRow);
     }
 
-    enemy.gridPos.col = enemy.lastGridPos.col;
-    enemy.gridPos.row = enemy.lastGridPos.row;
   }
-
-  public resetForNextLevel(player: Player, enemies: Enemy[]) {
-    this.enemies = enemies;
-    this.player = player;
-    this.items = [];
-    this.requestNextLevel = false;
-    this.generateItems(player.getMap());
-  }
-
-  // Systems/EntityManager.ts
 
   private generateItems(map: Map) {
     const playerStart = this.player.gridPos;
-
+    const itemFactor = 8;
+    const numberOfItems = map.level * itemFactor;
+    let i = 0;
     // 1. Gerar os itens comuns usando Pesos (Probabilidade)
-    for (let i = 0; i < 60; i++) {
-      // Reduzi para 60 para não poluir demais
+    while(i < numberOfItems) {
       const col = Math.floor(Math.random() * map.widthInTiles);
       const row = Math.floor(Math.random() * map.heightInTiles);
 
-      if (map.wallGrid[row]?.[col] === 0) {
-        const rand = Math.random();
+      if(this.items.some(item => item.gridPos.col === col && item.gridPos.row === row)) continue;
+
+      if (map.isFloor(col,row)) {
+        //check if theres an item on this postion already
         let type: ItemType;
 
-        if (rand < 0.7) {
-          type = ItemType.EXIT; // 70% chance
-        } else if (rand < 0.9) {
+        if(i%itemFactor == 0) {
+          type = ItemType.POWER;
+        } else if (i%itemFactor < 6) {
+          type = ItemType.SCORE; // 70% chance
+        } else if (i%itemFactor  < 8) {
           type = ItemType.HEAL; // 20% chance
-        } else {
-          type = ItemType.POWER; // 10% chance
         }
 
         this.items.push(new Item(col, row, map, type));
+        i++;
       }
     }
 

@@ -1,7 +1,6 @@
 import { Entity } from "./Entity";
 import { Input } from "../Systems/Input";
 import type { Map } from "../World/Map";
-import { MapBuilder } from "../World/MapBuilder";
 
 export class Player extends Entity {
   public input: Input;
@@ -14,7 +13,7 @@ export class Player extends Entity {
   private readonly I_FRAME_DURATION: number = 1.5;
 
   constructor(input: Input, map: Map, name: string) {
-    const pPos = MapBuilder.getPlayerInitialPos();
+    const pPos = map.getPlayerInitialPos();
     super(pPos.col, pPos.row, map, name);
     this.input = input;
     this.health = 3;

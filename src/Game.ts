@@ -1,7 +1,6 @@
 import { Player } from "./Entities/Player";
 import { Enemy } from "./Entities/Enemy";
 import { Input } from "./Systems/Input";
-import { MapBuilder } from "./World/MapBuilder";
 import { Map } from "./World/Map";
 import { Camera } from "./Systems/Camera";
 import { EntityManager } from "./Systems/EntityManager";
@@ -32,14 +31,13 @@ export class Game {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.lastTime = 0;
     this.level = 1;
-    const baseMap = new MapBuilder().generateBaseLayout();
-    this.map = new Map(baseMap);
+    this.map = new Map(this.level);
     this.input = new Input();
     const player: Player = new Player(this.input, this.map, "Gandalf");
-    const enemies: Enemy[] = Enemy.generateEnemies(100, this.map);
+    const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
 
     this.entities = new EntityManager(player, enemies);
-    this.hud = new HUD(this.ctx);
+    this.hud = new HUD();
     this.camera = new Camera();
   }
 
@@ -75,10 +73,18 @@ export class Game {
         this.goToNextLevel();
       }
       this.entities.update(delta);
-      this.camera.update(this.entities.player.x, this.entities.player.y);
       if (this.entities.player.getHealth() <= 0) {
-        this.currentState = GameState.GAME_OVER;
+        this.gameOver();
       }
+            this.hud.update(
+        this.currentState,
+        this.entities.player.getHealth(),
+        this.entities.player.getMaxHealth(),
+        this.entities.getScore(),
+        this.level
+      );
+      this.camera.update(this.entities.player.x, this.entities.player.y, this.level);
+
     }
   }
 
@@ -89,41 +95,43 @@ export class Game {
     this.map.draw(this.ctx);
     this.entities.draw(this.ctx);
     this.camera.release(this.ctx);
-    this.hud.draw(
-      this.currentState,
-      this.entities.player.getHealth(),
-      this.entities.player.getMaxHealth(),
-      this.entities.getScore(),
-      this.level,
-    );
+  }
+  private gameOver() {
+    this.currentState = GameState.GAME_OVER;
+    this.map = new Map(this.level);
+    this.lastTime = 0;
+    const player: Player = new Player(this.input, this.map, "Gandalf");
+    const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
+    this.entities = new EntityManager(player, enemies);
+
   }
 
   private restart() {
-    // Reinicia as posições e o estado
-    const player: Player = new Player(this.input, this.map, "Gandalf");
-    const enemies: Enemy[] = Enemy.generateEnemies(100, this.map);
-    this.entities = new EntityManager(player, enemies);
-    this.hud = new HUD(this.ctx);
+    this.level = 1;
+    this.hud = new HUD();
     this.camera = new Camera();
     this.currentState = GameState.RUNNING;
+  }
+
+  private goToNextLevel() {
+    this.level++;
+    const score = this.entities.getScore()
+    this.map = new Map(this.level);
+    this.lastTime = 0;
+    const backupPlayer = this.entities.player;
+    backupPlayer.fullHeal();
+    backupPlayer.setMap(this.map);
+    const initialPos = this.map.getPlayerInitialPos();
+    backupPlayer.gridPos.col = initialPos.col;
+    backupPlayer.gridPos.row = initialPos.row;
+    const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
+    this.entities = new EntityManager(backupPlayer, enemies, score);
+    this.hud = new HUD();
+    this.camera = new Camera(); this.currentState = GameState.NEXT_LEVEL;
   }
 
   start() {
     requestAnimationFrame(this.loop.bind(this));
   }
 
-  private goToNextLevel() {
-    this.level++;
-    const enemyCount = 100 + this.level * 20; // Aumenta dificuldade
-
-    const newMapData = new MapBuilder().generateBaseLayout();
-    this.map = new Map(newMapData);
-    const player: Player = new Player(this.input, this.map, "Gandalf");
-    const enemies: Enemy[] = Enemy.generateEnemies(enemyCount, this.map);
-
-    // O segredo é NÃO criar um novo player, mas atualizar o mapa dele
-    this.entities.resetForNextLevel(player, enemies);
-    this.camera = new Camera();
-    this.currentState = GameState.NEXT_LEVEL;
-  }
 }

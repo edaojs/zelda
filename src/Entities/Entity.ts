@@ -66,7 +66,7 @@ export abstract class Entity {
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle"; // Ajuda a centralizar verticalmente
-    ctx.font = "16px Arial"; // 30px pode ser muito grande para um tile
+    ctx.font = `${Global.TILE_SIZE / 3}px Arial`; // 30px pode ser muito grande para um tile
 
     // O pulo do gato: somar a posição de renderização ao deslocamento central
     ctx.fillText(
