@@ -107,7 +107,7 @@ export class EntityManager {
 
       if (map.isFloor(col,row)) {
         //check if theres an item on this postion already
-        let type: ItemType;
+        let type: ItemType = ItemType.SCORE;
 
         if(i%itemFactor == 0) {
           type = ItemType.POWER;

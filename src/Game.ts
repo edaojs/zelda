@@ -116,16 +116,12 @@ export class Game {
   private goToNextLevel() {
     this.level++;
     const score = this.entities.getScore()
+    const maxHealth = this.entities.player.getMaxHealth();
     this.map = new Map(this.level);
     this.lastTime = 0;
-    const backupPlayer = this.entities.player;
-    backupPlayer.fullHeal();
-    backupPlayer.setMap(this.map);
-    const initialPos = this.map.getPlayerInitialPos();
-    backupPlayer.gridPos.col = initialPos.col;
-    backupPlayer.gridPos.row = initialPos.row;
+    const player: Player = new Player(this.input, this.map, "Gandalf", maxHealth);
     const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
-    this.entities = new EntityManager(backupPlayer, enemies, score);
+    this.entities = new EntityManager(player, enemies, score);
     this.hud = new HUD();
     this.camera = new Camera(); this.currentState = GameState.NEXT_LEVEL;
   }

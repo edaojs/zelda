@@ -5,26 +5,30 @@ enum Tile {
   Wall = 1,
 }
 
-// Cálculo dinâmico baseado no Global
 export class Map {
-
   private tileSize: number;
   public wallGrid: Tile[][];
   public widthInTiles: number;
   public heightInTiles: number;
   public level: number;
+  public tilesetImage: HTMLImageElement;
 
   constructor(level: number) {
     this.tileSize = Global.TILE_SIZE;
-    this.widthInTiles = Math.floor((Global.CANVAS_WIDTH * level)/ Global.TILE_SIZE);
-    this.heightInTiles = Math.floor((Global.CANVAS_HEIGHT * level) / Global.TILE_SIZE)
+    this.widthInTiles = Math.floor(
+      (Global.CANVAS_WIDTH * level) / Global.TILE_SIZE,
+    );
+    this.heightInTiles = Math.floor(
+      (Global.CANVAS_HEIGHT * level) / Global.TILE_SIZE,
+    );
     this.level = level;
     this.wallGrid = [];
-    this.generateBaseLayout();
+    this.tilesetImage = new Image();
+    this.tilesetImage.src = `assets/world/tileset${Global.TILE_SIZE}.png`;
+    this.generateFullMap();
   }
 
-
-    public isWall(col: number, row: number): boolean {
+  public isWall(col: number, row: number): boolean {
     const tileID = this.wallGrid[row]?.[col];
     return tileID === 1;
   }
@@ -32,9 +36,10 @@ export class Map {
   public isFloor(col: number, row: number): boolean {
     const tileID = this.wallGrid[row]?.[col];
     return tileID === 0;
-  }  
+  }
 
   public generateBaseLayout() {
+    // 1. Geração Inicial (Igual ao seu código)
     for (let y = 0; y < this.heightInTiles; y++) {
       this.wallGrid[y] = [];
       for (let x = 0; x < this.widthInTiles; x++) {
@@ -49,27 +54,68 @@ export class Map {
       }
     }
 
-    // 2. GARANTIA DE SAÍDA DO PLAYER (Top-Left -> Centro)
-    // Escavamos um túnel até a metade da largura e metade da altura
+    // 2. Seus túneis de garantia (Mantém a conectividade básica)
     const midX = Math.floor(this.widthInTiles / 2);
     const midY = Math.floor(this.heightInTiles / 2);
-
-    for (let x = 1; x <= midX; x++) this.wallGrid[1][x] = Tile.Floor; // Túnel Horizontal
-    for (let y = 1; y <= midY; y++) this.wallGrid[y][1] = Tile.Floor; // Túnel Vertical
-
-    // 3. GARANTIA DE ENTRADA DO INIMIGO (Bottom-Right -> Centro)
+    for (let x = 1; x <= midX; x++) this.wallGrid[1][x] = Tile.Floor;
+    for (let y = 1; y <= midY; y++) this.wallGrid[y][1] = Tile.Floor;
     for (let x = this.widthInTiles - 2; x >= midX; x--)
       this.wallGrid[this.heightInTiles - 2][x] = Tile.Floor;
     for (let y = this.heightInTiles - 2; y >= midY; y--)
       this.wallGrid[y][this.widthInTiles - 2] = Tile.Floor;
-
-    // 4. PONTO DE ENCONTRO (Centro)
-    // Garante que os túneis se conectem no meio do mapa retangular
     this.wallGrid[midY][midX] = Tile.Floor;
     this.wallGrid[midY + 1][midX] = Tile.Floor;
     this.wallGrid[midY][midX + 1] = Tile.Floor;
 
+    // 3. LIMPEZA DE ÁREAS ISOLADAS (O novo passo)
+    this.removeIsolatedAreas(1, 1); // Começa do spawn do player
+
     return this.wallGrid;
+  }
+
+  private removeIsolatedAreas(startX: number, startY: number) {
+    const reachable = Array.from({ length: this.heightInTiles }, () =>
+      Array(this.widthInTiles).fill(false),
+    );
+    const queue: [number, number][] = [[startX, startY]];
+    reachable[startY][startX] = true;
+
+    // Algoritmo de Flood Fill para marcar áreas alcançáveis
+    while (queue.length > 0) {
+      const [x, y] = queue.shift()!;
+      const neighbors = [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0],
+      ];
+
+      for (const [dx, dy] of neighbors) {
+        const nx = x + dx;
+        const ny = y + dy;
+
+        if (
+          ny >= 0 &&
+          ny < this.heightInTiles &&
+          nx >= 0 &&
+          nx < this.widthInTiles
+        ) {
+          if (!reachable[ny][nx] && this.wallGrid[ny][nx] === Tile.Floor) {
+            reachable[ny][nx] = true;
+            queue.push([nx, ny]);
+          }
+        }
+      }
+    }
+
+    // Preenche com parede tudo que o Player não consegue alcançar
+    for (let y = 0; y < this.heightInTiles; y++) {
+      for (let x = 0; x < this.widthInTiles; x++) {
+        if (this.wallGrid[y][x] === Tile.Floor && !reachable[y][x]) {
+          this.wallGrid[y][x] = Tile.Wall;
+        }
+      }
+    }
   }
 
   // 2. Transforma o layout em IDs de Bitmask
@@ -93,18 +139,14 @@ export class Map {
 
   private calculateBitmask(base: number[][], x: number, y: number): number {
     let mask = 0;
-    // N=1, S=2, E=4, W=8
-    if (y > 0 && base[y - 1][x] === 1) mask += 1;
-    if (y < this.heightInTiles - 1 && base[y + 1][x] === 1) mask += 2;
-    if (x < this.widthInTiles - 1 && base[y][x + 1] === 1) mask += 4;
-    if (x > 0 && base[y][x - 1] === 1) mask += 8;
 
-    // Se o resultado for 0 (parede sem vizinhos), podemos retornar um ID fixo
-    // para "bloco isolado", por exemplo, 16.
-    return mask === 0 ? 16 : mask;
+    if (y > 0 && base[y - 1][x] === Tile.Wall) mask += 1; // N
+    if (x < base[0].length - 1 && base[y][x + 1] === Tile.Wall) mask += 2; // E
+    if (y < base.length - 1 && base[y + 1][x] === Tile.Wall) mask += 4; // S
+    if (x > 0 && base[y][x - 1] === Tile.Wall) mask += 8; // W
+
+    return mask;
   }
-
-  
 
   // Métodos de auxílio para o spawn
   public getPlayerInitialPos() {
@@ -119,29 +161,87 @@ export class Map {
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    for (let row = 0; row < this.wallGrid.length; row++) {
-      for (let col = 0; col < this.wallGrid[row].length; col++) {
-        if (this.wallGrid[row][col] === 1) {
+    for (let y = 0; y < this.heightInTiles; y++) {
+      for (let x = 0; x < this.widthInTiles; x++) {
 
-          ctx.fillStyle = 'white';
-          ctx.fillRect(
-            col * this.tileSize,
-            row * this.tileSize,
-            this.tileSize,
-            this.tileSize,
-          );
+        ctx.fillStyle = "#233f32";
+        ctx.fillRect(
+          x * this.tileSize,
+          y * this.tileSize,
+          this.tileSize,
+          this.tileSize,
+        );
 
-          // Erase a rectangle in the middle
-          ctx.clearRect(
-            col * this.tileSize + 2,
-            row * this.tileSize + 2,
-            this.tileSize - 4,
-            this.tileSize - 4,
-          );          
+        // Erase a rectangle in the middle
+        ctx.clearRect(
+          x * this.tileSize + 1,
+          y * this.tileSize + 1,
+          this.tileSize - 2,
+          this.tileSize - 2,
+        );
+
+        const bitmaskId = this.wallGrid[y][x];
+
+
+        if (bitmaskId > 0) {
+          this.drawSingleTile(ctx, bitmaskId, x, y);
         }
       }
     }
   }
+
+  private drawSingleTile(
+    ctx: CanvasRenderingContext2D,
+    tilesetIndex: number,
+    x: number,
+    y: number,
+  ) {
+    // O tilesetIndex é a posição linear no seu PNG de 4 colunas
+    const sx = (tilesetIndex % 4) * this.tileSize;
+    const sy = Math.floor(tilesetIndex / 4) * this.tileSize;
+
+    ctx.drawImage(
+      this.tilesetImage,
+      sx,
+      sy,
+      this.tileSize,
+      this.tileSize,
+      x * this.tileSize,
+      y * this.tileSize,
+      this.tileSize,
+      this.tileSize,
+    );
+    // ctx.fillStyle = "white";
+    // ctx.fillText(
+    //   tilesetIndex.toString(),
+    //   x * this.tileSize + 8,
+    //   y * this.tileSize + 16,
+    // );
+  }
+
+  // public draw(ctx: CanvasRenderingContext2D) {
+  //   for (let row = 0; row < this.wallGrid.length; row++) {
+  //     for (let col = 0; col < this.wallGrid[row].length; col++) {
+  //       if (this.wallGrid[row][col] === 1) {
+  //         ctx.fillStyle = "white";
+  //         ctx.fillRect(
+  //           col * this.tileSize,
+  //           row * this.tileSize,
+  //           this.tileSize,
+  //           this.tileSize,
+  //         );
+
+  //         // Erase a rectangle in the middle
+  //         ctx.clearRect(
+  //           col * this.tileSize + 2,
+  //           row * this.tileSize + 2,
+  //           this.tileSize - 4,
+  //           this.tileSize - 4,
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 
   // public draw(ctx: CanvasRenderingContext2D) {
   //   for (let row = 0; row < this.wallGrid.length; row++) {
@@ -181,7 +281,7 @@ export class Map {
   //       // Tiled soma 1 ao ID, então subtraímos para voltar ao índice 0
 
   //       const actualID = tileID - 1;
-  //       const sx = (actualID % tilesetColumns) * this.tileSize;
+  //       const sx = Math.floor(actualID % tilesetColumns) * this.tileSize;
   //       const sy = Math.floor(actualID / tilesetColumns) * this.tileSize;
 
   //       // 4. Onde desenhar no Canvas (Destino)
