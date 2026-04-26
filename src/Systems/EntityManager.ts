@@ -3,7 +3,7 @@ import { Enemy } from "../Entities/Enemy";
 import { Entity } from "../Entities/Entity";
 import { Item } from "../Entities/Item";
 import { ItemType } from "../Entities/Item";
-import type { Map } from "../World/Map";
+import type { MapStatic } from "../World/MapStatic";
 
 export class EntityManager {
   public player: Player;
@@ -93,14 +93,14 @@ export class EntityManager {
 
   }
 
-  private generateItems(map: Map) {
+  private generateItems(map: MapStatic) {
     const playerStart = this.player.gridPos;
     const itemFactor = 8;
     const numberOfItems = map.level * itemFactor;
     let i = 0;
     // 1. Gerar os itens comuns usando Pesos (Probabilidade)
     while(i < numberOfItems) {
-      const col = Math.floor(Math.random() * map.widthInTiles);
+      const col = Math.floor(Math.random() * map.fullLevel.width);
       const row = Math.floor(Math.random() * map.heightInTiles);
 
       if(this.items.some(item => item.gridPos.col === col && item.gridPos.row === row)) continue;
@@ -129,11 +129,11 @@ export class EntityManager {
     this.spawnFarItem(map, ItemType.EXIT, playerStart, 15); // Mínimo 15 tiles de distância
   }
 
-  private spawnUniqueItem(map: Map, type: ItemType) {
+  private spawnUniqueItem(map: MapStatic, type: ItemType) {
     let placed = false;
     while (!placed) {
-      const col = Math.floor(Math.random() * map.widthInTiles);
-      const row = Math.floor(Math.random() * map.heightInTiles);
+      const col = Math.floor(Math.random() * map.fullLevel.width);
+      const row = Math.floor(Math.random() * map.fullLevel.height);
       if (map.wallGrid[row]?.[col] === 0) {
         this.items.push(new Item(col, row, map, type));
         placed = true;
@@ -142,7 +142,7 @@ export class EntityManager {
   }
 
   private spawnFarItem(
-    map: Map,
+    map: MapStatic,
     type: ItemType,
     playerPos: { col: number; row: number },
     minDist: number,
@@ -151,8 +151,8 @@ export class EntityManager {
     let attempts = 0;
 
     while (!placed && attempts < 500) {
-      const col = Math.floor(Math.random() * map.widthInTiles);
-      const row = Math.floor(Math.random() * map.heightInTiles);
+      const col = Math.floor(Math.random() * map.fullLevel.width);
+      const row = Math.floor(Math.random() * map.fullLevel.height);
 
       // Distância de Manhattan (soma das diferenças de col e row)
       const dist =

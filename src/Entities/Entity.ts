@@ -1,16 +1,16 @@
 import { Global } from "../Global";
-import type { Map } from "../World/Map";
+import type { MapStatic } from "../World/MapStatic";
 
 export abstract class Entity {
   public gridPos: { col: number; row: number }; // Posição na grade (0, 1, 2...)
   public size: { width: number; height: number };
-  protected map: Map;
+  protected map: MapStatic;
   protected renderPos: { x: number; y: number };
   protected lerpSpeed: number = 15; // Velocidade da suavização
   public lastGridPos: { col: number; row: number } = { col: 0, row: 0 };
   private name: string;
 
-  constructor(col: number, row: number, map: Map, name: string) {
+  constructor(col: number, row: number, map: MapStatic, name: string) {
     this.gridPos = { col, row };
     this.renderPos = {
       x: col * Global.TILE_SIZE,
@@ -81,7 +81,7 @@ export abstract class Entity {
     return this.map;
   }
 
-  public setMap(map: Map) {
+  public setMap(map: MapStatic) {
     this.map = map
   }
 }

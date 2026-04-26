@@ -1,7 +1,7 @@
 import { Player } from "./Entities/Player";
 import { Enemy } from "./Entities/Enemy";
 import { Input } from "./Systems/Input";
-import { Map } from "./World/Map";
+import { MapStatic } from "./World/MapStatic";
 import { Camera } from "./Systems/Camera";
 import { EntityManager } from "./Systems/EntityManager";
 import { HUD } from "./Systems/HUD";
@@ -19,7 +19,7 @@ export class Game {
   private ctx: CanvasRenderingContext2D;
   private input: Input;
   private lastTime: number;
-  private map: Map;
+  private map: MapStatic;
   private camera: Camera;
   private currentState: GameState = GameState.START_MENU;
   private entities: EntityManager;
@@ -31,7 +31,7 @@ export class Game {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.lastTime = 0;
     this.level = 1;
-    this.map = new Map(this.level);
+    this.map = new MapStatic(this.level);
     this.input = new Input();
     const player: Player = new Player(this.input, this.map, "Gandalf");
     const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
@@ -83,22 +83,24 @@ export class Game {
         this.entities.getScore(),
         this.level
       );
-      this.camera.update(this.entities.player.x, this.entities.player.y, this.level);
+      this.camera.update(this.entities.player.x, this.entities.player.y, this.map.fullLevel.width, this.map.fullLevel.height);
 
     }
   }
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
     this.camera.apply(this.ctx);
+
+    this.ctx.drawImage(this.map.tilesetImage, 0 , 0, this.map.fullLevel.imageWidth, this.map.fullLevel.imageHeight);
+
     this.map.draw(this.ctx);
     this.entities.draw(this.ctx);
     this.camera.release(this.ctx);
   }
   private gameOver() {
     this.currentState = GameState.GAME_OVER;
-    this.map = new Map(this.level);
+    this.map = new MapStatic(this.level);
     this.lastTime = 0;
     const player: Player = new Player(this.input, this.map, "Gandalf");
     const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);
@@ -117,7 +119,7 @@ export class Game {
     this.level++;
     const score = this.entities.getScore()
     const maxHealth = this.entities.player.getMaxHealth();
-    this.map = new Map(this.level);
+    this.map = new MapStatic(this.level);
     this.lastTime = 0;
     const player: Player = new Player(this.input, this.map, "Gandalf", maxHealth);
     const enemies: Enemy[] = Enemy.generateEnemies(this.level, this.map);

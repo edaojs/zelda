@@ -6,11 +6,11 @@ enum Tile {
 }
 
 export class Map {
-  private tileSize: number;
+  public tileSize: number;
   public wallGrid: Tile[][];
   public widthInTiles: number;
   public heightInTiles: number;
-  public level: number;
+  public level: any;
   public tilesetImage: HTMLImageElement;
 
   constructor(level: number) {
@@ -25,7 +25,7 @@ export class Map {
     this.wallGrid = [];
     this.tilesetImage = new Image();
     this.tilesetImage.src = `assets/world/tileset${Global.TILE_SIZE}.png`;
-    this.generateFullMap();
+    //this.generateFullMap();
   }
 
   public isWall(col: number, row: number): boolean {

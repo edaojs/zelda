@@ -9,15 +9,15 @@ export class Camera {
     constructor() {}
 
     // Centering logic
-    public update(targetX: number, targetY: number, level: number) {
+    public update(targetX: number, targetY: number, mapWidth: number, mapHeight: number) {
         let nextX = this.x + (targetX - this.width / 2 - this.x) * 0.2;
         let nextY = this.y + (targetY - this.height / 2 - this.y) * 0.2;
 
         nextX = Math.max(0, nextX);
         nextY = Math.max(0, nextY);
 
-        nextX = Math.min(nextX, Global.CANVAS_WIDTH * level - this.width);
-        nextY = Math.min(nextY, Global.CANVAS_HEIGHT * level - this.height);
+        nextX = Math.min(nextX, Global.TILE_SIZE * mapWidth - this.width);
+        nextY = Math.min(nextY, Global.TILE_SIZE * mapHeight - this.height);
 
         this.x = nextX;
         this.y = nextY;
