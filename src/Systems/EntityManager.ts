@@ -100,8 +100,8 @@ export class EntityManager {
     let i = 0;
     // 1. Gerar os itens comuns usando Pesos (Probabilidade)
     while(i < numberOfItems) {
-      const col = Math.floor(Math.random() * map.fullLevel.width);
-      const row = Math.floor(Math.random() * map.heightInTiles);
+      const col = Math.floor(Math.random() * map.fullLevel.layers[1].width);
+      const row = Math.floor(Math.random() * map.fullLevel.layers[1].height);
 
       if(this.items.some(item => item.gridPos.col === col && item.gridPos.row === row)) continue;
 

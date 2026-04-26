@@ -20,7 +20,7 @@ export class MapStatic extends Map {
     this.tilesetImage = new Image();
     this.tilesetImage.src = `assets/world/tileset.png`;
     this.fullLevel = level1
-    this.wallGrid = convertTo2DArray(this.fullLevel.layers[0].data, this.fullLevel.width)
+    this.wallGrid = convertTo2DArray(this.fullLevel.layers[1].data, this.fullLevel.layers[0].width)
   }
 
   public isWall(col: number, row: number): boolean {
@@ -40,8 +40,8 @@ export class MapStatic extends Map {
 
   public getEnemyInitialPos() {
     //make sure to spawn the enemy in a valid RANDOM position (not in a wall)
-    const col = Math.floor(Math.random() * (this.fullLevel.width - 2)) + 1;
-    const row = Math.floor(Math.random() * (this.fullLevel.height - 2)) + 1;
+    const col = Math.floor(Math.random() * (this.fullLevel.layers[0].width - 2)) + 1;
+    const row = Math.floor(Math.random() * (this.fullLevel.layers[0].height - 2)) + 1;
     return { col, row };
   }
 
