@@ -30,13 +30,14 @@ export class Map {
 
   public isWall(col: number, row: number): boolean {
     const tileID = this.wallGrid[row]?.[col];
-    return tileID === 1;
+    return tileID === Tile.Wall;
   }
 
   public isFloor(col: number, row: number): boolean {
     const tileID = this.wallGrid[row]?.[col];
-    return tileID === 0;
+    return tileID === Tile.Floor;
   }
+
 
   public generateBaseLayout() {
     // 1. Geração Inicial (Igual ao seu código)
@@ -150,13 +151,17 @@ export class Map {
 
   // Métodos de auxílio para o spawn
   public getPlayerInitialPos() {
-    return { col: 1, row: 1 };
+    return { col: 2, row: 7 };
   }
 
   public getEnemyInitialPos() {
-    //make sure to spawn the enemy in a valid RANDOM position (not in a wall)
-    const col = Math.floor(Math.random() * (this.widthInTiles - 2)) + 1;
-    const row = Math.floor(Math.random() * (this.heightInTiles - 2)) + 1;
+    let ehChao = false;//make sure to spawn the enemy in a valid RANDOM position (not in a wall)
+    let col = 0 ,row = 0;
+    while(!ehChao) {
+      col = Math.floor(Math.random() * this.widthInTiles);
+      row = Math.floor(Math.random() * this.heightInTiles);
+      ehChao = this.isFloor(col, row);
+    }
     return { col, row };
   }
 

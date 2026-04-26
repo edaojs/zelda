@@ -92,9 +92,9 @@ export class Game {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.camera.apply(this.ctx);
 
-    this.ctx.drawImage(this.map.tilesetImage, 0 , 0, this.map.fullLevel.layers[1].width, this.map.fullLevel.layers[1].height);
+    this.ctx.drawImage(this.map.tilesetImage, 0 , 0, this.map.fullLevel.layers[0].imagewidth, this.map.fullLevel.layers[0].imageheight);
 
-    this.map.draw(this.ctx);
+    //this.map.draw(this.ctx);
     this.entities.draw(this.ctx);
     this.camera.release(this.ctx);
   }

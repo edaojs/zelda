@@ -1,4 +1,4 @@
-import type { Map } from "../World/Map";
+import type { MapStatic } from "../World/MapStatic";
 import { Entity } from "./Entity";
 
 export enum ItemType {
@@ -21,7 +21,7 @@ export class Item extends Entity {
     [ItemType.EXIT]: "🚪",
   };  
 
-  constructor(col: number, row: number, map: Map, type: ItemType) {
+  constructor(col: number, row: number, map: MapStatic, type: ItemType) {
     super(col, row, map, type.toString());
     this.type = type;
   }

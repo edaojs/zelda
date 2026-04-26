@@ -1,7 +1,7 @@
 //import { Global } from "../Global";
 import { Global } from "../Global";
 import { pathfind } from "../utils/pathFind";
-import type { Map } from "../World/Map";
+import type { MapStatic } from "../World/MapStatic";
 import { Entity } from "./Entity";
 import type { Player } from "./Player";
 
@@ -10,7 +10,7 @@ export class Enemy extends Entity {
   private moveDelay: number = 0.5;
   private currentDir: { dCol: number; dRow: number } = { dCol: 0, dRow: 0 };
   public lastGridPos: { col: number; row: number } = { col: 0, row: 0 };
-  constructor(map: Map, name: string) {
+  constructor(map: MapStatic, name: string) {
     const ePos = map.getEnemyInitialPos();
     super(ePos.col, ePos.row, map, name);
     this.moveTimer = 0;
@@ -63,7 +63,7 @@ export class Enemy extends Entity {
     super.draw(ctx);
   }
 
-  public static generateEnemies(level: number, map: Map) {
+  public static generateEnemies(level: number, map: MapStatic) {
     const qty = level * 8
     console.log('qtd enemies', qty);
     const enemies: Enemy[] = [];

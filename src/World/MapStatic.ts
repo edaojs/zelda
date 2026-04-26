@@ -3,11 +3,6 @@ import { convertTo2DArray } from "../utils/arrayToCols";
 import { Map } from "./Map";
 import { level1 } from "./Level1";
 
-enum Tile {
-  Floor = 0,
-  Wall = 1,
-}
-
 export class MapStatic extends Map {
 
   public fullLevel: any;
@@ -20,29 +15,7 @@ export class MapStatic extends Map {
     this.tilesetImage = new Image();
     this.tilesetImage.src = `assets/world/tileset.png`;
     this.fullLevel = level1
-    this.wallGrid = convertTo2DArray(this.fullLevel.layers[1].data, this.fullLevel.layers[0].width)
-  }
-
-  public isWall(col: number, row: number): boolean {
-    const tileID = this.wallGrid[row]?.[col];
-    return tileID === Tile.Wall;
-  }
-
-  public isFloor(col: number, row: number): boolean {
-    const tileID = this.wallGrid[row]?.[col];
-    return tileID === Tile.Floor;
-  }
-
-  // Métodos de auxílio para o spawn
-  public getPlayerInitialPos() {
-    return { col: 2, row: 7 };
-  }
-
-  public getEnemyInitialPos() {
-    //make sure to spawn the enemy in a valid RANDOM position (not in a wall)
-    const col = Math.floor(Math.random() * (this.fullLevel.layers[0].width - 2)) + 1;
-    const row = Math.floor(Math.random() * (this.fullLevel.layers[0].height - 2)) + 1;
-    return { col, row };
+    this.wallGrid = convertTo2DArray(this.fullLevel.layers[1].data, this.fullLevel.layers[1].width)
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
@@ -59,10 +32,10 @@ export class MapStatic extends Map {
 
           // Erase a rectangle in the middle
           ctx.clearRect(
-            col * this.tileSize + 2,
-            row * this.tileSize + 2,
-            this.tileSize - 4,
-            this.tileSize - 4,
+            col * this.tileSize + 1,
+            row * this.tileSize + 1,
+            this.tileSize - 1,
+            this.tileSize - 1,
           );
         }
       }

@@ -106,6 +106,7 @@ export class EntityManager {
       if(this.items.some(item => item.gridPos.col === col && item.gridPos.row === row)) continue;
 
       if (map.isFloor(col,row)) {
+        console.log("IS FLOOOOOR!!!!");
         //check if theres an item on this postion already
         let type: ItemType = ItemType.SCORE;
 

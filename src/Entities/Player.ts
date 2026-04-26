@@ -1,6 +1,6 @@
 import { Entity } from "./Entity";
 import { Input } from "../Systems/Input";
-import type { Map } from "../World/Map";
+import type { MapStatic } from "../World/MapStatic";
 
 export class Player extends Entity {
   public input: Input;
@@ -12,7 +12,7 @@ export class Player extends Entity {
   private powerModeTimer: number;
   private readonly I_FRAME_DURATION: number = 1.5;
 
-  constructor(input: Input, map: Map, name: string, maxHealth: number = 3) {
+  constructor(input: Input, map: MapStatic, name: string, maxHealth: number = 3) {
     const pPos = map.getPlayerInitialPos();
     super(pPos.col, pPos.row, map, name);
     this.input = input;
